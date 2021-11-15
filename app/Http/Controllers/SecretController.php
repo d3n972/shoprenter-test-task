@@ -6,6 +6,7 @@ use App\Models\Secret;
 use App\Http\Requests\StoreSecretRequest;
 use App\Http\Requests\UpdateSecretRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class SecretController extends Controller{
@@ -52,15 +53,14 @@ class SecretController extends Controller{
    */
   public function show($hash){
 
-    dd(Secret::all());
-    $sec = Secret::where('hash', $hash)->first();
-    if($sec == null||!$sec->isValid()){
+    $sec = Secret::withTrashed()->where('hash', $hash)->first();
+    if($sec == null || !$sec->isValid()){
       return response()->preferredFormat($data = [
         'error' => 'Secret not found'
       ], $status = 404, $headers = [], $xmlRoot = 'Secret');
     }
 
-
+    $sec->remainingViews -= 1;
     $sec->saveOrFail();
     return response()->preferredFormat($data = $sec, $status = 200, $headers = [], $xmlRoot = 'Secret');
   }

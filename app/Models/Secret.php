@@ -32,17 +32,19 @@ class Secret extends Model{
   }
 
   public function isValid(){
-    if($this->remainingViews >= 1){
-      return true;
+    $is_current = Carbon::parse($this->expires_at)->diffInMinutes(\Carbon\Carbon::now()) >= 1;
+    $has_view_tokens = $this->remainingViews >= 1;
+   // dd($is_current,Carbon::parse(\Carbon\Carbon::now())->diffInMinutes($this->expires_at),$has_view_tokens);
+    if(!$has_view_tokens){
+      return false;
+    }
+    if(!$is_current){
+      return false;
+    }
+    else{
+      return $has_view_tokens;
     }
 
-    if($this->expiresAt != null){
-      $diff = Carbon::now()->diffInMinutes($this->expiresAt);
-      if($diff > 0){
-        return true;
-      }
-    }
-    return false;
 
   }
 

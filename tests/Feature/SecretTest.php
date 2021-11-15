@@ -7,6 +7,7 @@ use Faker\Provider\Text;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use function Psy\debug;
 
 class SecretTest extends TestCase{
 
@@ -26,8 +27,8 @@ class SecretTest extends TestCase{
     $f = new \Faker\Provider\hu_HU\Text($g);
     return $this->post('/secret', [
       'secret' => $f->realText(),
-      'expireAfter' => rand(0, 1000),
-      'remainingViews' => rand(1, 50)
+      'expireAfter' => rand(120, 1000),
+      'remainingViews' => rand(10, 50)
     ],
       [
         'Accept' => $accept
@@ -66,7 +67,7 @@ class SecretTest extends TestCase{
     $k = $this->post('/secret', [
       'secret' => $f->realText(),
       'expireAfter' => rand(0, 1000),
-      'remainingViews' => 2
+      'remainingViews' => 1
     ],
       [
         'Accept' => 'application/json'
@@ -93,6 +94,10 @@ class SecretTest extends TestCase{
       ]);
 
     $key = $k->json()['hash'];
+    for($i = 0; $i < 60; $i++){
+      debug(['sleeping to check the expiration']);
+      sleep(1);
+    }
     $r = $this->get('/secret/' . $key, ['accept' => 'application/json']);
     $r->assertStatus(404);
 
