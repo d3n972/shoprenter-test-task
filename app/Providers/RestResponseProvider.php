@@ -7,6 +7,10 @@ use Illuminate\Container\Container;
 use Illuminate\Support\Str;
 use Spatie\ArrayToXml\ArrayToXml;
 
+/**
+ * Code via mtownsend5512/response-xml
+ * @link https://github.com/mtownsend5512/response-xml
+ */
 class RestResponseProvider extends ServiceProvider{
   /**
    * Register services.
@@ -52,11 +56,15 @@ class RestResponseProvider extends ServiceProvider{
 
     \Illuminate\Routing\ResponseFactory::macro('preferredFormat', function($data, $status = 200, array $headers = [], $xmlRoot = 'response', $encoding = null){
       $request = Container::getInstance()->make('request');
+
+      /** I needed to disable the dynamic content-type setting because it breaks the signed exchange, see link below
+       * @see https://support.google.com/chrome/thread/2381978/err-invalid-signed-exchange?hl=en&msgid=3224823
+       */
       if(Str::contains($request->headers->get('Accept'), 'xml')){
-        return $this->xml($data, $status, array_merge($headers, ['Content-Type' => $request->headers->get('Accept')]), $xmlRoot, $encoding);
+        return $this->xml($data, $status, array_merge($headers,[] ), $xmlRoot, $encoding);
       }
       else{
-        return $this->json($data, $status, array_merge($headers, ['Content-Type' => $request->headers->get('Accept')]));
+        return $this->json($data, $status,array_merge($headers,[] ), $options = 0);
       }
     });
   }
